@@ -88,7 +88,7 @@ After configuring the ports, the RCS team should:
 An application-specific configuration file (e.g., `sds.cfg`) must be created to include application and environment-specific settings.  
 
 You can download a template from the following link:  
-[SDS Configuration File Template](https://github.iu.edu/RDServices/scholarly-data-share/blob/master/middleware/async/sds.cfg)
+[SDS Configuration File Template](sds.cfg)
 
 ### 1. **HSI Utility**
 The SDS team needs to download the OS-specific HSI utility, which SDS workers use to pull data from the IU SDA service. Refer to the [IU SDA Service Documentation](https://servicenow.iu.edu/kb?id=kb_article_view&sysparm_article=KB0024406) for more details. Additionally, see this IU KB article on how to download HSI: [Use HSI to access your SDA account at IU](https://servicenow.iu.edu/kb?id=kb_article_view&sysparm_article=KB0022463).
@@ -183,7 +183,7 @@ pip install mysql-connector-python pandas pika tornado requests
 ```
 
 ### 9. **Pull SDS Code and Maintenance Tool Scripts**
-Pull the SDS code from RDS GitHub [SDS Middleware](https://github.iu.edu/RDServices/scholarly-data-share/tree/master/middleware/async), or copy the existing SDS application code from an II VM as a starting point. Maintenance tool scripts are available in the repository under the `maintenance_tools` folder.
+Pull the SDS code from RDS GitHub [SDS Middleware](https://github.com/indiana-university/sds-middleware/tree/master/middleware/async), or copy the existing SDS application code from an II VM as a starting point. Maintenance tool scripts are available in the repository under the `maintenance_tools` folder.
 
 
 > ⚠️ **Warning**: Maintenance tools can be reused for a new SDS middleware deployment. However, certain paths within the shell scripts may be specific to the II VM environment. Update these environment-specific paths as needed before executing the scripts. For example, you may need to update `SCRIPT_PATH` in `launch_web_screen_session.sh` and `launch_worker_screen_session.sh`.
@@ -198,7 +198,7 @@ if __name__ == '__main__':
 
 If your configuration file is named `sds.cfg` and placed in the same folder as `async_api_server.py` and `worker.py`, you can skip the code editing step.
 
-**Note:** In [SDS Middleware](https://github.iu.edu/RDServices/scholarly-data-share/tree/master/middleware/async), the Python filename for the API server is `async_api_server.py`. For existing SDS applications on II VMs, it may be named differently. For example, on `rdsisdp@rds-sds-prod.uits.iu.edu`, where SDS ISDP is deployed, the API server Python file is `async_mrda_isdp_dev.py`.
+**Note:** In [SDS Middleware](https://github.com/indiana-university/sds-middleware/tree/master/middleware/async), the Python filename for the API server is `async_api_server.py`. For existing SDS applications on II VMs, it may be named differently. For example, on `rdsisdp@rds-sds-prod.uits.iu.edu`, where SDS ISDP is deployed, the API server Python file is `async_mrda_isdp_dev.py`.
 
 ### 9. **Set Up a Cron Job for the Housekeeping Service**
 To automate the cleanup of the staging area, follow these steps:
@@ -236,9 +236,9 @@ Once set up, the housekeeping service will automatically clean the staging area 
 
 ### 10. **Launch Services**
 
-You can refer to the [SDS Middleware Maintenance Guide](https://github.iu.edu/RDServices/sds_middleware_maintenance/blob/main/maintenance_README.md) in the same repository for instructions on running SDS components, especially how to use scripts in the `maintenance_tools` folder to launch API and worker services.
+You can use the scripts in the `maintenance_tools` folder to launch API and worker services.
 
-**Note:** For the API server, `async_api_server.py` in [SDS Middleware](https://github.iu.edu/RDServices/scholarly-data-share/tree/master/middleware/async) listens on `https://<hostname>:<port>/sds?p=<path/to/SDA/archive>&uid=<user_email_addr>`. For existing SDS applications on II VMs, the web API server may listen on a different subpath. For example, on `rdsisdp@rds-sds-prod.uits.iu.edu`, where SDS ISDP is deployed, the API server (`async_mrda_isdp_dev.py`) listens on `https://<hostname>:<port>/isdp?`. You can customize `async_api_server.py` to configure a different listening subpath based on your preference.
+**Note:** For the API server, `async_api_server.py` in [SDS Middleware](https://github.com/indiana-university/sds-middleware/tree/master/middleware/async) listens on `https://<hostname>:<port>/sds?p=<path/to/SDA/archive>&uid=<user_email_addr>`. For existing SDS applications on II VMs, the web API server may listen on a different subpath. For example, on `rdsisdp@rds-sds-prod.uits.iu.edu`, where SDS ISDP is deployed, the API server (`async_mrda_isdp_dev.py`) listens on `https://<hostname>:<port>/isdp?`. You can customize `async_api_server.py` to configure a different listening subpath based on your preference.
 
 
 
