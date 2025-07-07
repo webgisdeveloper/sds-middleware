@@ -1,4 +1,5 @@
 import configparser
+import os
 from pathlib import Path
 from typing import Optional
 from pydantic import Field
@@ -65,8 +66,11 @@ class Settings(BaseSettings):
     @classmethod
     def from_config_file(cls, config_path: str = "sds.cfg"):
         config = configparser.ConfigParser()
-        config.read(config_path)
-        print(WebServerSettings.__dict__)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(current_dir, config_path)
+        with open(config_path) as fh:
+            config.read_file(fh)
+        print(config.sections())
         return cls(
             webserver=WebServerSettings(**dict(config['webserver'])),
             sds_sync=SdsSyncSettings(**dict(config['sds_sync'])),
