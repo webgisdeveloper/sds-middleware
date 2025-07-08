@@ -64,13 +64,13 @@ class Settings(BaseSettings):
     logging: LoggingSettings
 
     @classmethod
-    def from_config_file(cls, config_path: str = "sds.cfg"):
+    def from_config_file(cls, config_file: str = "sds.cfg"):
         config = configparser.ConfigParser()
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        config_path = os.path.join(current_dir, config_path)
-        with open(config_path) as fh:
-            config.read_file(fh)
-        print(config.sections())
+        current_file = Path(__file__).resolve()
+        current_dir = current_file.parent
+        config_file_path = current_dir / config_file
+        with open(config_file_path) as fh:
+            config.read_file(fh)            
         return cls(
             webserver=WebServerSettings(**dict(config['webserver'])),
             sds_sync=SdsSyncSettings(**dict(config['sds_sync'])),
