@@ -10,3 +10,8 @@ dependencies = [
     "pydantic-settings>=2.10.1",
     "uvicorn>=0.35.0",
 ]
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.30.1",
+]
