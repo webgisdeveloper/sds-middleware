@@ -12,4 +12,4 @@ async def read_root():
 
 @app.get("/config")
 async def read_config():
-    return settings.dict()
+    return settings.model_dump()
