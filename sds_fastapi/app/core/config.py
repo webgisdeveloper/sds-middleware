@@ -1,7 +1,7 @@
 import configparser
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -15,7 +15,8 @@ class WebServerSettings(BaseSettings):
     cert_file: str = "</path/to/fullchain.pem>"
     key_file: str = "</path/to/privkey.pem>"
     ssl_hostname: str = "<hostname>"
-    client_secret: str = "<your-client-secret-here>"
+    client_secret: str = "<your-client-secret-here>"  # Default fallback
+    site_secrets: Dict[str, str] = {}  # Site-specific secrets
 
 
 class SdsSyncSettings(BaseSettings):
@@ -71,9 +72,22 @@ class Settings(BaseSettings):
         current_dir = current_file.parent
         config_file_path = current_dir / config_file
         with open(config_file_path) as fh:
-            config.read_file(fh)            
+            config.read_file(fh)
+        
+        # Parse site-specific secrets from config
+        site_secrets = {}
+        for section_name in config.sections():
+            if section_name.startswith('site_'):
+                site_name = section_name[5:]  # Remove 'site_' prefix
+                if 'client_secret' in config[section_name]:
+                    site_secrets[site_name] = config[section_name]['client_secret']
+        
+        # Create webserver settings with site secrets
+        webserver_config = dict(config['webserver'])
+        webserver_config['site_secrets'] = site_secrets
+        
         return cls(
-            webserver=WebServerSettings(**dict(config['webserver'])),
+            webserver=WebServerSettings(**webserver_config),
             sds_sync=SdsSyncSettings(**dict(config['sds_sync'])),
             sds_async=SdsAsyncSettings(**dict(config['sds_async'])),
             worker=WorkerSettings(**dict(config['worker'])),
