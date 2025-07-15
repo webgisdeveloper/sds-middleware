@@ -15,6 +15,7 @@ class WebServerSettings(BaseSettings):
     cert_file: str = "</path/to/fullchain.pem>"
     key_file: str = "</path/to/privkey.pem>"
     ssl_hostname: str = "<hostname>"
+    client_secret: str = "<your-client-secret-here>"
 
 
 class SdsSyncSettings(BaseSettings):
