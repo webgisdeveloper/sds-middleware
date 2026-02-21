@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS user_jobs (
     job_status ENUM('submitted', 'processing', 'completed', 'failed', 'cancelled') DEFAULT 'submitted',
     job_size BIGINT,
     file_name VARCHAR(255),
-    token VARCHAR(10) UNIQUE NOT NULL,
+    token VARCHAR(10) UNIQUE,
     download_url TEXT,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
