@@ -20,6 +20,7 @@ from app.core.config_manager import (
     validate_config_updates
 )
 from app.core.db_test import test_database_from_config
+from app.core.hsi_test import test_hsi_from_config
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -186,6 +187,34 @@ async def test_database_connection(session_token: Optional[str] = Header(None, a
         return {
             "success": False,
             "message": f"Error testing database connection: {str(e)}",
+            "details": {}
+        }
+
+
+@router.post("/test-hsi")
+async def test_hsi_binary(session_token: Optional[str] = Header(None, alias="X-Session-Token")):
+    """
+    Test the HSI binary using current configuration.
+    Requires valid admin session.
+    """
+    verify_session(session_token)
+    
+    try:
+        config_data = read_config_file()
+        
+        if "sds_sync" not in config_data:
+            raise HTTPException(status_code=400, detail="SDS Sync configuration section not found")
+        
+        sds_sync_config = config_data["sds_sync"]
+        result = test_hsi_from_config(sds_sync_config)
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Error testing HSI binary: {str(e)}",
             "details": {}
         }
 
@@ -551,9 +580,12 @@ async def admin_console_page():
                 <div>
                     <div class="success-message" id="saveSuccess"></div>
                     <div class="error-message" id="saveError"></div>
-                    <div class="info-message" id="dbTestInfo"></div>
+                    <div class="info-message" id="testInfo"></div>
                 </div>
                 <div class="button-group">
+                    <button class="test-db-btn" id="testHsiBtn" onclick="testHsiBinary()">
+                        📦 Test HSI
+                    </button>
                     <button class="test-db-btn" id="testDbBtn" onclick="testDatabaseConnection()">
                         🔌 Test Database
                     </button>
@@ -759,12 +791,86 @@ async def admin_console_page():
             }
         }
         
+        // Test HSI binary
+        async function testHsiBinary() {
+            const testHsiBtn = document.getElementById('testHsiBtn');
+            const errorDiv = document.getElementById('saveError');
+            const successDiv = document.getElementById('saveSuccess');
+            const infoDiv = document.getElementById('testInfo');
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            infoDiv.style.display = 'none';
+            testHsiBtn.disabled = true;
+            testHsiBtn.textContent = '🔄 Testing...';
+            
+            try {
+                const response = await fetch('/admin/test-hsi', {
+                    method: 'POST',
+                    headers: {
+                        'X-Session-Token': sessionToken
+                    }
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    successDiv.textContent = '✅ ' + data.message;
+                    successDiv.style.display = 'block';
+                    
+                    // Show HSI details
+                    if (data.details.hsi_bin_path) {
+                        let detailsHtml = `<strong>HSI Binary Details:</strong><br>Path: ${data.details.hsi_bin_path}<br>`;
+                        if (data.details.permissions) {
+                            detailsHtml += `Permissions: ${data.details.permissions}<br>`;
+                        }
+                        if (data.details.file_size) {
+                            detailsHtml += `Size: ${(data.details.file_size / 1024).toFixed(2)} KB<br>`;
+                        }
+                        if (data.details.version_info) {
+                            detailsHtml += `Info: ${data.details.version_info}`;
+                        }
+                        infoDiv.innerHTML = detailsHtml;
+                        infoDiv.style.display = 'block';
+                    }
+                    
+                    setTimeout(() => {
+                        successDiv.style.display = 'none';
+                        infoDiv.style.display = 'none';
+                    }, 10000);
+                } else {
+                    errorDiv.innerHTML = `<strong>❌ ${data.message}</strong>`;
+                    if (data.details.error_message) {
+                        errorDiv.innerHTML += `<br><small>${data.details.error_message}</small>`;
+                    } else if (!data.details.configured) {
+                        errorDiv.innerHTML += `<br><small>Please configure hsi_bin_path in the [sds_sync] section</small>`;
+                    }
+                    errorDiv.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        errorDiv.style.display = 'none';
+                    }, 10000);
+                }
+            } catch (error) {
+                errorDiv.textContent = '❌ Error testing HSI binary: ' + error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                testHsiBtn.disabled = false;
+                testHsiBtn.textContent = '📦 Test HSI';
+            }
+        }
+        
         // Test database connection
         async function testDatabaseConnection() {
             const testDbBtn = document.getElementById('testDbBtn');
             const errorDiv = document.getElementById('saveError');
             const successDiv = document.getElementById('saveSuccess');
-            const infoDiv = document.getElementById('dbTestInfo');
+            const infoDiv = document.getElementById('testInfo');
             
             errorDiv.style.display = 'none';
             successDiv.style.display = 'none';
