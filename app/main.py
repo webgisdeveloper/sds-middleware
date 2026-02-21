@@ -1,16 +1,29 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.core.config import settings
 from app.core.logger import add_logging_middleware
 from app.core.security import add_security_middleware
 from app.admin_console import router as admin_router
+import os
 
 app = FastAPI()
 
 add_logging_middleware(app)
 add_security_middleware(app)
 
+# Mount static files directory
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
 # Include admin console router
 app.include_router(admin_router)
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    favicon_path = os.path.join("app", "static", "favicon.ico")
+    if os.path.exists(favicon_path):
+        return FileResponse(favicon_path)
+    return {"message": "Favicon not found"}
 
 @app.get("/")
 async def read_root():
