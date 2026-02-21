@@ -8,11 +8,12 @@ CREATE TABLE IF NOT EXISTS user_jobs (
     job_size BIGINT,
     file_name VARCHAR(255),
     download_url TEXT,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Seed 10 random entries
-INSERT INTO user_jobs (user_email, job_status, job_size, file_name, download_url)
+INSERT INTO user_jobs (user_email, job_status, job_size, file_name, download_url, created_time)
 SELECT 
     CONCAT('user', FLOOR(RAND() * 100), '@example.com'),
     ELT(FLOOR(1 + (RAND() * 5)), 'submitted', 'processing', 'completed', 'failed', 'cancelled'),
@@ -29,7 +30,8 @@ SELECT
         'in_2011_GibsonPosey_metadata.zip', 'IN_daviess_cty_2009_ortho_metadata.zip', 
         'IN_dearborn_county_2008orthos_metadata.zip', 'IndianaDunes2005_Metadata.zip'
     ),
-    CONCAT('https://storage.googleapis.com/download/', FLOOR(RAND() * 1000))
+    CONCAT('https://storage.googleapis.com/download/', FLOOR(RAND() * 1000)),
+    TIMESTAMP(DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 30) DAY) + INTERVAL FLOOR(RAND() * 86400) SECOND)
 FROM 
     (SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 
      UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10) AS temp

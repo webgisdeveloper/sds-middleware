@@ -348,13 +348,61 @@ async def admin_console_page():
             margin-bottom: 20px;
         }
         
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .section-header:hover {
+            opacity: 0.8;
+        }
+        
         .section-title {
             font-size: 20px;
             color: #667eea;
             font-weight: 600;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
+            margin: 0;
+        }
+        
+        .toggle-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s, background 0.3s;
+        }
+        
+        .toggle-btn:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+        
+        .toggle-btn.collapsed {
+            transform: rotate(0deg);
+        }
+        
+        .section-content {
+            display: block;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .section-content.collapsed {
+            display: none;
         }
         
         .field-group {
@@ -586,10 +634,30 @@ async def admin_console_page():
                 const sectionDiv = document.createElement('div');
                 sectionDiv.className = 'section';
                 
+                // Create section header with toggle button
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'section-header';
+                
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'section-title';
                 titleDiv.textContent = `[${section.section}]`;
-                sectionDiv.appendChild(titleDiv);
+                headerDiv.appendChild(titleDiv);
+                
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'toggle-btn';
+                toggleBtn.innerHTML = '+';
+                toggleBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleSection(sectionDiv);
+                };
+                headerDiv.appendChild(toggleBtn);
+                
+                headerDiv.onclick = () => toggleSection(sectionDiv);
+                sectionDiv.appendChild(headerDiv);
+                
+                // Create section content container
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'section-content collapsed';
                 
                 section.fields.forEach(field => {
                     const fieldGroup = document.createElement('div');
@@ -608,11 +676,26 @@ async def admin_console_page():
                     input.dataset.key = field.key;
                     fieldGroup.appendChild(input);
                     
-                    sectionDiv.appendChild(fieldGroup);
+                    contentDiv.appendChild(fieldGroup);
                 });
                 
+                sectionDiv.appendChild(contentDiv);
                 container.appendChild(sectionDiv);
             });
+        }
+        
+        // Toggle section collapse/expand
+        function toggleSection(sectionDiv) {
+            const content = sectionDiv.querySelector('.section-content');
+            const toggleBtn = sectionDiv.querySelector('.toggle-btn');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                toggleBtn.innerHTML = '−';
+            } else {
+                content.classList.add('collapsed');
+                toggleBtn.innerHTML = '+';
+            }
         }
         
         // Save configuration
