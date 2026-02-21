@@ -1,0 +1,18 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'my_app_db'
+      MYSQL_ROOT_PASSWORD: 'rootpassword'
+      # These create the user and grant permissions to 'my_app_db'
+      MYSQL_USER: 'dbtester'
+      MYSQL_PASSWORD: 'supersecret'
+    ports:
+      - '3306:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  db_data:

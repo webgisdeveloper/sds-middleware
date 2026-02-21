@@ -1,5 +1,40 @@
 # SDS Middleware with FastAPI
 
+## 🎯 New Features
+
+### System Admin Console
+
+A secure web-based admin console is now available for managing system configuration!
+
+**Access**: `http://localhost:8080/admin/`  
+**Default Secret Code**: `admin-secret-2026`
+
+#### Features:
+- 🔐 Secure authentication with secret code
+- 📝 View and edit all configuration fields from `sds.cfg`
+- 💾 Automatic backups before changes
+- ✅ Real-time validation
+- 🎨 Modern, responsive web interface
+
+**Quick Start:**
+```bash
+# Start the server
+./run.sh
+
+# Open the admin console
+open http://localhost:8080/admin/
+
+# Or use the quick start script
+./start_admin_console.sh
+```
+
+**Documentation:**
+- [Admin Console Guide](ADMIN_CONSOLE.md) - Complete usage guide
+- [Visual Guide](ADMIN_CONSOLE_VISUAL_GUIDE.md) - Screenshots and UI overview
+- [Implementation Summary](ADMIN_CONSOLE_SUMMARY.md) - Technical details
+
+---
+
 ## Security
 
 This application implements client secret authentication for all API calls except those originating from localhost. The system supports both a default client secret and site-specific client secrets.
