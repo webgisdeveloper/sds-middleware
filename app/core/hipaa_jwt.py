@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, Tuple
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 import base64
 import secrets
@@ -98,7 +98,7 @@ class HIPAAJWTManager:
         Returns:
             32-byte Fernet key
         """
-        kdf = PBKDF2(
+        kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
             salt=b'hipaa_jwt_salt',  # In production, use unique salt per installation
