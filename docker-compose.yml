@@ -5,14 +5,13 @@ services:
     environment:
       MYSQL_DATABASE: 'my_app_db'
       MYSQL_ROOT_PASSWORD: 'rootpassword'
-      # These create the user and grant permissions to 'my_app_db'
       MYSQL_USER: 'dbtester'
       MYSQL_PASSWORD: 'supersecret'
     ports:
       - '3306:3306'
     volumes:
       - db_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./localtest/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - sds-network
     healthcheck:
@@ -23,7 +22,7 @@ services:
 
   app:
     build:
-      context: ..
+      context: .
       dockerfile: Dockerfile
     restart: always
     ports:
@@ -35,11 +34,11 @@ services:
       OPS_SECRET_CODE: 'ops-secret-2026'
     volumes:
       # Mount storages directory with read/write permissions (bind mount)
-      - ../storages:/app/storages
-      # Mount config file
-      - ../app/core/sds.cfg:/app/app/core/sds.cfg
+      - ./storages:/app/storages
+      # Mount config file (optional - comment out to use container's default)
+      - ./app/core/sds.cfg:/app/app/core/sds.cfg
       # Mount logs directory
-      - ../logs:/app/logs
+      - ./logs:/app/logs
     depends_on:
       db:
         condition: service_healthy

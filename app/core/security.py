@@ -14,6 +14,22 @@ class ClientSecretMiddleware(BaseHTTPMiddleware):
     Supports site-specific client secrets based on request headers.
     """
     
+    # Paths that don't require authentication
+    EXEMPT_PATHS = {
+        "/",
+        "/docs",
+        "/redoc",
+        "/openapi.json",
+        "/favicon.ico",
+    }
+    
+    # Path prefixes that don't require authentication
+    EXEMPT_PREFIXES = (
+        "/admin",
+        "/ops",
+        "/static",
+    )
+    
     def __init__(self, app, default_client_secret: str, site_secrets: Dict[str, str]):
         super().__init__(app)
         self.default_client_secret = default_client_secret
@@ -22,6 +38,11 @@ class ClientSecretMiddleware(BaseHTTPMiddleware):
             ipaddress.ip_address("127.0.0.1"),
             ipaddress.ip_address("::1"),
         }
+        # Docker gateway IPs (typical ranges)
+        self.docker_networks = [
+            ipaddress.ip_network("172.16.0.0/12"),  # Docker default bridge
+            ipaddress.ip_network("192.168.0.0/16"),  # Docker custom networks
+        ]
     
     def get_site_from_request(self, request: Request) -> Optional[str]:
         """Extract site identifier from request headers."""
@@ -48,11 +69,27 @@ class ClientSecretMiddleware(BaseHTTPMiddleware):
             return self.site_secrets[site]
         return self.default_client_secret
     
-    def is_localhost(self, ip: str) -> bool:
-        """Check if the request comes from localhost."""
+    def is_localhost(self, ip: str, request: Request = None) -> bool:
+        """Check if the request comes from localhost or Docker internal network."""
         try:
             client_ip = ipaddress.ip_address(ip)
-            return client_ip in self.localhost_ips
+            
+            # Check if it's a standard localhost IP
+            if client_ip in self.localhost_ips:
+                return True
+            
+            # Check if it's from Docker internal network
+            for network in self.docker_networks:
+                if client_ip in network:
+                    return True
+            
+            # Check if Host header indicates localhost
+            if request:
+                host_header = request.headers.get("host", "")
+                if host_header.startswith("localhost") or host_header.startswith("127.0.0.1"):
+                    return True
+            
+            return False
         except ValueError:
             return False
     
@@ -99,12 +136,18 @@ class ClientSecretMiddleware(BaseHTTPMiddleware):
         return False
     
     async def dispatch(self, request: Request, call_next):
+        # Check if path is exempt from authentication
+        request_path = request.url.path
+        if request_path in self.EXEMPT_PATHS or request_path.startswith(self.EXEMPT_PREFIXES):
+            response = await call_next(request)
+            return response
+        
         # Get client IP and site
         client_ip = self.get_client_ip(request)
         site = self.get_site_from_request(request)
         
         # Skip validation for localhost
-        if self.is_localhost(client_ip):
+        if self.is_localhost(client_ip, request):
             site_info = f" for site '{site}'" if site else ""
             logger.info(f"Localhost request from {client_ip}{site_info}, skipping client secret validation")
             response = await call_next(request)

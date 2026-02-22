@@ -1,6 +1,72 @@
 # SDS Middleware with FastAPI
 
+## 🚀 Quick Start
+
+### Option 1: Docker Deployment (Recommended)
+
+Deploy the entire application with one command:
+
+```bash
+./docker-deploy.sh up
+```
+
+This starts:
+- ✅ Application server on port 8080
+- ✅ MySQL database on port 3306
+- ✅ Persistent storage volumes with read/write permissions
+- ✅ Network connectivity between services
+
+**Access Points:**
+- Admin Console: http://localhost:8080/admin/
+- Operations Console: http://localhost:8080/ops/
+- API: http://localhost:8080/
+
+**Full Docker Guide**: [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
+
+### Option 2: Local Development
+
+```bash
+# Start the server locally
+./run.sh
+
+# Access the admin console
+./start_admin_console.sh
+
+# Access the operations console
+./start_ops_console.sh
+```
+
+---
+
 ## 🎯 New Features
+
+### Operations Console
+
+Monitor and manage system operations with real-time storage tracking!
+
+**Access**: `http://localhost:8080/ops/`  
+**Default Secret Code**: `ops-secret-2026`
+
+#### Features:
+- 🔐 Secure authentication with separate secret code
+- 💾 Storage monitoring for caches and jobs folders
+- 📊 Color-coded usage indicators (Green/Orange/Red)
+- 🔄 Auto-refresh every 30 seconds
+- 📈 Real-time capacity monitoring
+
+**Quick Start:**
+```bash
+# Start the server
+./run.sh
+
+# Open the operations console
+./start_ops_console.sh
+```
+
+**Documentation:**
+- [Operations Console Guide](OPERATIONS_CONSOLE.md) - Complete usage guide
+- [Visual Guide](OPERATIONS_CONSOLE_VISUAL_GUIDE.md) - Screenshots and UI overview
+- [Quick Reference](OPS_CONSOLE_QUICK_REF.md) - Quick reference card
 
 ### System Admin Console
 
