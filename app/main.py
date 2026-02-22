@@ -6,6 +6,7 @@ from app.core.logger import add_logging_middleware
 from app.core.security import add_security_middleware
 from app.admin_console import router as admin_router
 from app.worker import router as worker_router
+from app.hipaa_api import router as hipaa_router
 import os
 
 app = FastAPI()
@@ -19,6 +20,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 # Include routers
 app.include_router(admin_router)
 app.include_router(worker_router)
+app.include_router(hipaa_router)
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
