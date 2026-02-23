@@ -36,7 +36,7 @@ services:
       # Mount storages directory with read/write permissions (bind mount)
       - ./storages:/app/storages
       # Mount config file (optional - comment out to use container's default)
-      - ./app/core/sds.cfg:/app/app/core/sds.cfg
+      # - ./app/core/sds.cfg:/app/app/core/sds.cfg
       # Mount logs directory
       - ./logs:/app/logs
     depends_on:
