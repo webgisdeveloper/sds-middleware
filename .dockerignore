@@ -1,0 +1,62 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# uv
+.uv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+api.log
+worker.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Docker
+.dockerignore
+
+# Git
+.git/
+.gitignore
+
+# Documentation build
+docs/_build/
+
+# Backup files
+*.backup
+*.backup_*
+app/core/backups/
+
+# Local test data
+localtest/
+tests/random_file.txt
+
+# Storage (will be mounted as volume)
+storages/
