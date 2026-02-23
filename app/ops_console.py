@@ -666,6 +666,12 @@ async def ops_console_page():
                 <div class="tab active" onclick="switchTab('storage')">
                     💾 Storage Management
                 </div>
+                <div class="tab" onclick="switchTab('token')">
+                    🔑 Token Management
+                </div>
+                <div class="tab" onclick="switchTab('blacklist')">
+                    🚫 Blacklist Management
+                </div>
             </div>
             
             <div class="content">
@@ -692,6 +698,16 @@ async def ops_console_page():
                             </button>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Token Management Tab -->
+                <div id="tokenTab" class="tab-content">
+                    <!-- Content to be implemented -->
+                </div>
+                
+                <!-- Blacklist Management Tab -->
+                <div id="blacklistTab" class="tab-content">
+                    <!-- Content to be implemented -->
                 </div>
             </div>
         </div>
