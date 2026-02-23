@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sds-middleware-app
+  namespace: sds-middleware
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sds-middleware
+  template:
+    metadata:
+      labels:
+        app: sds-middleware
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.35
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z db 3306; do
+            echo "Waiting for MySQL to be ready..."
+            sleep 2
+          done
+          echo "MySQL is ready!"
+      containers:
+      - name: app
+        image: sds-middleware:latest
+        imagePullPolicy: Never  # Use local image for OrbStack
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: ADMIN_SECRET_CODE
+          valueFrom:
+            configMapKeyRef:
+              name: sds-config
+              key: ADMIN_SECRET_CODE
+        - name: OPS_SECRET_CODE
+          valueFrom:
+            configMapKeyRef:
+              name: sds-config
+              key: OPS_SECRET_CODE
+        volumeMounts:
+        - name: storages
+          mountPath: /app/storages
+        - name: logs
+          mountPath: /app/logs
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 10
+      volumes:
+      - name: storages
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sds-middleware-service
+  namespace: sds-middleware
+spec:
+  selector:
+    app: sds-middleware
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: LoadBalancer  # OrbStack supports LoadBalancer
