@@ -39,6 +39,13 @@ class StorageInfo(BaseModel):
     status: str  # 'green', 'orange', 'red'
 
 
+class StorageActionResponse(BaseModel):
+    success: bool
+    message: str
+    deleted_count: int
+    freed_bytes: int
+
+
 def verify_session(session_token: Optional[str]) -> None:
     """Verify operations session or raise HTTPException."""
     if not session_token:
@@ -153,6 +160,84 @@ async def get_storage_info(session_token: Optional[str] = Header(None, alias="X-
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving storage info: {str(e)}")
+
+
+@router.post("/api/storage/clear-caches", response_model=StorageActionResponse)
+async def clear_caches(session_token: Optional[str] = Header(None, alias="X-Session-Token")):
+    """
+    Clear all cache files from the caches directory.
+    Requires valid operations session.
+    
+    NOTE: This is a stub implementation. Users should implement the actual deletion logic.
+    """
+    verify_session(session_token)
+    
+    try:
+        # Get the caches directory
+        current_file = Path(__file__).resolve()
+        project_root = current_file.parent.parent
+        caches_dir = project_root / "storages" / "caches"
+        
+        # TODO: Implement cache clearing logic here
+        # Example implementation:
+        # deleted_count = 0
+        # freed_bytes = 0
+        # for item in caches_dir.rglob('*'):
+        #     if item.is_file():
+        #         freed_bytes += item.stat().st_size
+        #         item.unlink()
+        #         deleted_count += 1
+        
+        # Placeholder response - replace with actual implementation
+        return StorageActionResponse(
+            success=True,
+            message="TODO: Implement cache clearing logic",
+            deleted_count=0,
+            freed_bytes=0
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error clearing caches: {str(e)}")
+
+
+@router.post("/api/storage/purge-jobs", response_model=StorageActionResponse)
+async def purge_expired_jobs(session_token: Optional[str] = Header(None, alias="X-Session-Token")):
+    """
+    Purge expired job files from the jobs directory.
+    Requires valid operations session.
+    
+    NOTE: This is a stub implementation. Users should implement the actual deletion logic.
+    """
+    verify_session(session_token)
+    
+    try:
+        # Get the jobs directory
+        current_file = Path(__file__).resolve()
+        project_root = current_file.parent.parent
+        jobs_dir = project_root / "storages" / "jobs"
+        
+        # TODO: Implement job purging logic here
+        # Example implementation:
+        # deleted_count = 0
+        # freed_bytes = 0
+        # now = datetime.now()
+        # for item in jobs_dir.rglob('*'):
+        #     if item.is_file():
+        #         # Check if file is expired (e.g., older than 30 days)
+        #         mtime = datetime.fromtimestamp(item.stat().st_mtime)
+        #         if (now - mtime).days > 30:
+        #             freed_bytes += item.stat().st_size
+        #             item.unlink()
+        #             deleted_count += 1
+        
+        # Placeholder response - replace with actual implementation
+        return StorageActionResponse(
+            success=True,
+            message="TODO: Implement job purging logic",
+            deleted_count=0,
+            freed_bytes=0
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error purging jobs: {str(e)}")
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -370,6 +455,58 @@ async def ops_console_page():
             cursor: not-allowed;
         }
         
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .clear-caches-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+            flex: 1;
+        }
+        
+        .clear-caches-btn:hover {
+            background: #c82333;
+        }
+        
+        .clear-caches-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .purge-jobs-btn {
+            background: #fd7e14;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+            flex: 1;
+        }
+        
+        .purge-jobs-btn:hover {
+            background: #e8590c;
+        }
+        
+        .purge-jobs-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
         .storage-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -544,6 +681,15 @@ async def ops_console_page():
                         
                         <div id="storageContent" class="loading">
                             Loading storage information...
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="clear-caches-btn" id="clearCachesBtn" onclick="clearCaches()">
+                                🗑️ Clear Caches
+                            </button>
+                            <button class="purge-jobs-btn" id="purgeJobsBtn" onclick="purgeExpiredJobs()">
+                                🧹 Purge Expired Jobs
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -725,6 +871,90 @@ async def ops_console_page():
             document.getElementById('consoleView').classList.add('hidden');
             document.getElementById('secretCode').value = '';
             document.getElementById('loginError').style.display = 'none';
+        }
+        
+        // Clear caches
+        async function clearCaches() {
+            if (!confirm('⚠️ Are you sure you want to clear all caches? This action cannot be undone.')) {
+                return;
+            }
+            
+            const clearCachesBtn = document.getElementById('clearCachesBtn');
+            const originalText = clearCachesBtn.textContent;
+            clearCachesBtn.disabled = true;
+            clearCachesBtn.textContent = '⏳ Clearing...';
+            
+            try {
+                const response = await fetch('/ops/api/storage/clear-caches', {
+                    method: 'POST',
+                    headers: {
+                        'X-Session-Token': sessionToken
+                    }
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const freedMB = (data.freed_bytes / (1024 * 1024)).toFixed(2);
+                    alert(`✅ ${data.message}\n\nDeleted: ${data.deleted_count} files\nFreed: ${freedMB} MB`);
+                    // Refresh storage info
+                    await loadStorageInfo();
+                } else {
+                    alert(`❌ Failed to clear caches: ${data.message}`);
+                }
+            } catch (error) {
+                alert(`❌ Error clearing caches: ${error.message}`);
+            } finally {
+                clearCachesBtn.disabled = false;
+                clearCachesBtn.textContent = originalText;
+            }
+        }
+        
+        // Purge expired jobs
+        async function purgeExpiredJobs() {
+            if (!confirm('⚠️ Are you sure you want to purge expired jobs? This action cannot be undone.')) {
+                return;
+            }
+            
+            const purgeJobsBtn = document.getElementById('purgeJobsBtn');
+            const originalText = purgeJobsBtn.textContent;
+            purgeJobsBtn.disabled = true;
+            purgeJobsBtn.textContent = '⏳ Purging...';
+            
+            try {
+                const response = await fetch('/ops/api/storage/purge-jobs', {
+                    method: 'POST',
+                    headers: {
+                        'X-Session-Token': sessionToken
+                    }
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const freedMB = (data.freed_bytes / (1024 * 1024)).toFixed(2);
+                    alert(`✅ ${data.message}\n\nDeleted: ${data.deleted_count} files\nFreed: ${freedMB} MB`);
+                    // Refresh storage info
+                    await loadStorageInfo();
+                } else {
+                    alert(`❌ Failed to purge jobs: ${data.message}`);
+                }
+            } catch (error) {
+                alert(`❌ Error purging jobs: ${error.message}`);
+            } finally {
+                purgeJobsBtn.disabled = false;
+                purgeJobsBtn.textContent = originalText;
+            }
         }
         
         // Auto-refresh every 30 seconds when on storage tab
